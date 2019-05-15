@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Days Until *</string>
+    <string name="channel_name">daysuntil</string>
+    <string name="channel_description">Notifications about days that came</string>
+</resources>

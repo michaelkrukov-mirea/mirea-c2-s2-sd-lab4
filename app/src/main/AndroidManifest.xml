@@ -1,0 +1,41 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.kryukov.daysuntil">
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity android:name=".ConfigActivity">
+            <intent-filter>
+                <action
+                    android:name="android.appwidge.action.APPWIDGET_CONFIGURE">
+                </action>
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".Receiver"
+            android:icon="@android:drawable/ic_dialog_dialer"
+            android:label="@string/app_name">
+        </receiver>
+
+        <receiver
+            android:name=".DaysUntilWidget"
+            android:icon="@android:drawable/ic_dialog_dialer"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action
+                    android:name="android.appwidget.action.APPWIDGET_UPDATE">
+                </action>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_metadata">
+            </meta-data>
+        </receiver>
+
+    </application>
+</manifest>
