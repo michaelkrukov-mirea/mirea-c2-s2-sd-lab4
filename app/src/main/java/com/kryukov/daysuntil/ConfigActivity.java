@@ -16,8 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class ConfigActivity extends AppCompatActivity {
     final static String CHANNEL_ID = "DaysUntilChan";
-    final static int HOUR_TO_TRIGGER = 14;
-    final static int MINUTE_TO_TRIGGER = 57;
+    final static int HOUR_TO_TRIGGER = 9;
+    final static int MINUTE_TO_TRIGGER = 0;
 
     int widgetID = AppWidgetManager.INVALID_APPWIDGET_ID;
     Intent resultValue;
@@ -73,7 +73,6 @@ public class ConfigActivity extends AppCompatActivity {
                         ConfigActivity.MINUTE_TO_TRIGGER,
                         0
                 );
-                calendar.add(Calendar.MINUTE, -1);
 
                 if (calendar.before(Calendar.getInstance())) {
                     Utils.showNotification(
