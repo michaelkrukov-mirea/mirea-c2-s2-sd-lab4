@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.widget.RemoteViews;
 
 import java.util.Calendar;
-import java.util.Date;
 
 public class DaysUntilWidget extends AppWidgetProvider {
     @Override
@@ -27,32 +26,21 @@ public class DaysUntilWidget extends AppWidgetProvider {
                              SharedPreferences sp, int widgetID) {
         RemoteViews widgetView = new RemoteViews(context.getPackageName(), R.layout.widget);
 
-        int widgetYear = sp.getInt(ConfigActivity.WIDGET_YEAR + widgetID, 0);
-        if (widgetYear != 0) {
-            int widgetMonth = sp.getInt(ConfigActivity.WIDGET_MONTH + widgetID, 0);
-            int widgetDay = sp.getInt(ConfigActivity.WIDGET_DAY + widgetID, 0);
-
-            Calendar a = Calendar.getInstance();
-            a.set(widgetYear, widgetMonth, widgetDay);
-
-            Calendar b = Calendar.getInstance();
-            b.setTime(new Date());
-
-            long daysBetween = 0;
-            while (b.before(a)) {
-                b.add(Calendar.DAY_OF_MONTH, 1);
-                daysBetween++;
-            }
-
-            widgetView.setTextViewText(R.id.tv, String.format("%d",daysBetween));
+        long daysBetween =  Utils.getDaysUntilFromPreferences(sp, widgetID);
+        if (daysBetween >= 0) {
+            widgetView.setTextViewText(R.id.tv, String.format("%d", daysBetween));
         }
 
         Intent configIntent = new Intent(context, ConfigActivity.class);
         configIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetID);
-        PendingIntent configPendingIntent = PendingIntent.getActivity(context, 0, configIntent, 0);
+        PendingIntent configPendingIntent = PendingIntent.getActivity(context, widgetID, configIntent, 0);
         widgetView.setOnClickPendingIntent(R.id.linear_layout, configPendingIntent);
 
         appWidgetManager.updateAppWidget(widgetID, widgetView);
+
+        if (!Utils.isAlarmForWidgetExists(context, widgetID)) {
+            Utils.scheduleAlarmForWidget(context, widgetID, Calendar.getInstance());
+        }
     }
 
     @Override
@@ -62,6 +50,7 @@ public class DaysUntilWidget extends AppWidgetProvider {
             editor.remove(ConfigActivity.WIDGET_YEAR + widgetID);
             editor.remove(ConfigActivity.WIDGET_MONTH + widgetID);
             editor.remove(ConfigActivity.WIDGET_DAY + widgetID);
+            Utils.clearAlarmForWidget(context, widgetID);
         }
         editor.apply();
     }

@@ -9,11 +9,11 @@
         android:id="@+id/tv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#6600ff00"
+        android:background="#8C111111"
         android:gravity="center"
-        android:text="Hello there"
-        android:textColor="#000"
-        android:textSize="18sp">
+        android:text="@string/loading"
+        android:textColor="#DDDDDD"
+        android:textSize="24sp">
     </TextView>
 
 </LinearLayout>

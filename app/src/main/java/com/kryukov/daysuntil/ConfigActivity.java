@@ -1,12 +1,8 @@
 package com.kryukov.daysuntil;
          
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
 import android.app.DatePickerDialog;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,12 +13,11 @@ import android.widget.DatePicker;
 import java.util.Calendar;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-
-import static android.app.PendingIntent.FLAG_CANCEL_CURRENT;
 
 public class ConfigActivity extends AppCompatActivity {
     final static String CHANNEL_ID = "DaysUntilChan";
+    final static int HOUR_TO_TRIGGER = 14;
+    final static int MINUTE_TO_TRIGGER = 57;
 
     int widgetID = AppWidgetManager.INVALID_APPWIDGET_ID;
     Intent resultValue;
@@ -61,6 +56,7 @@ public class ConfigActivity extends AppCompatActivity {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear,
                                   int dayOfMonth) {
+                // Save selected date
                 SharedPreferences sp = getSharedPreferences(WIDGET_PREF, MODE_PRIVATE);
                 Editor e = sp.edit();
                 e.putInt(WIDGET_YEAR + widgetID, year);
@@ -69,28 +65,24 @@ public class ConfigActivity extends AppCompatActivity {
                 e.commit();
 
                 Calendar calendar = Calendar.getInstance();
-                calendar.set(year, monthOfYear, dayOfMonth);
-                calendar.set(Calendar.HOUR_OF_DAY, 9);
-                calendar.set(Calendar.MINUTE, 0);
-                calendar.set(Calendar.SECOND, 0);
+                calendar.set(
+                        year,
+                        monthOfYear,
+                        dayOfMonth,
+                        ConfigActivity.HOUR_TO_TRIGGER,
+                        ConfigActivity.MINUTE_TO_TRIGGER,
+                        0
+                );
+                calendar.add(Calendar.MINUTE, -1);
 
                 if (calendar.before(Calendar.getInstance())) {
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), ConfigActivity.CHANNEL_ID);
-                    builder.setWhen(System.currentTimeMillis());
-                    builder.setBadgeIconType(NotificationCompat.BADGE_ICON_NONE);
-                    builder.setSmallIcon(R.drawable.ic_launcher_background);
-                    builder.setContentTitle("It's already happened");
-                    builder.setContentText("9:00");
-
-                    NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                    manager.notify(0, builder.build());
-
+                    Utils.showNotification(
+                            getApplicationContext(),
+                            "It's already happened",
+                            widgetID
+                    );
                 } else {
-                    Intent intent = new Intent(getApplicationContext(), Receiver.class);
-                    PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), widgetID, intent, FLAG_CANCEL_CURRENT);
-                    AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-                    am.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                    Utils.scheduleAlarmForWidget(getApplicationContext(), widgetID, Calendar.getInstance());
                 }
 
                 commitAndFinish(sp);
@@ -112,22 +104,18 @@ public class ConfigActivity extends AppCompatActivity {
     public void showDialog() {
         SharedPreferences sp = getSharedPreferences(WIDGET_PREF, MODE_PRIVATE);
 
-        Calendar cal = Calendar.getInstance();
+        Calendar calendar = Utils.getCalendarFromPreferences(sp, widgetID);
 
-        if (sp.getInt(WIDGET_YEAR + widgetID, 0) != 0) {
-            cal.set(
-                    sp.getInt(WIDGET_YEAR + widgetID, 0),
-                    sp.getInt(WIDGET_MONTH + widgetID, 0),
-                    sp.getInt(WIDGET_DAY + widgetID, 0)
-            );
+        if (calendar == null) {
+            calendar = Calendar.getInstance();
         }
 
         DatePickerDialog dpd = new DatePickerDialog(
                 ConfigActivity.this,
                 dateSetListener,
-                cal.get(Calendar.YEAR),
-                cal.get(Calendar.MONTH),
-                cal.get(Calendar.DAY_OF_MONTH)
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
         );
 
         dpd.setOnCancelListener(new DialogInterface.OnCancelListener() {
