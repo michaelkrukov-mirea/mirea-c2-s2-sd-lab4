@@ -26,9 +26,14 @@ public class DaysUntilWidget extends AppWidgetProvider {
                              SharedPreferences sp, int widgetID) {
         RemoteViews widgetView = new RemoteViews(context.getPackageName(), R.layout.widget);
 
-        long daysBetween =  Utils.getDaysUntilFromPreferences(sp, widgetID);
+        Calendar calendar = Utils.getCalendarFromPreferences(sp, widgetID);
+
+        long daysBetween = calendar != null ? Utils.getDaysUntil(calendar) : -1;
+
         if (daysBetween >= 0) {
             widgetView.setTextViewText(R.id.tv, String.format("%d", daysBetween));
+        } else {
+            widgetView.setTextViewText(R.id.tv, "-");
         }
 
         Intent configIntent = new Intent(context, ConfigActivity.class);
@@ -38,9 +43,24 @@ public class DaysUntilWidget extends AppWidgetProvider {
 
         appWidgetManager.updateAppWidget(widgetID, widgetView);
 
-        if (!Utils.isAlarmForWidgetExists(context, widgetID)) {
-            Utils.scheduleAlarmForWidget(context, widgetID, Calendar.getInstance());
+        Utils.clearAlarmForWidget(context, widgetID);
+
+        Calendar alarmCalendar = Calendar.getInstance();
+
+        if (daysBetween > 0) {
+            alarmCalendar.add(Calendar.DATE, 1);
+            alarmCalendar.set(Calendar.HOUR_OF_DAY, 0);
+            alarmCalendar.set(Calendar.MINUTE, 0);
+            alarmCalendar.set(Calendar.SECOND, 0);
+        } else if (daysBetween == 0){
+            alarmCalendar.set(Calendar.HOUR_OF_DAY, ConfigActivity.HOUR_TO_TRIGGER);
+            alarmCalendar.set(Calendar.MINUTE, ConfigActivity.MINUTE_TO_TRIGGER);
+            alarmCalendar.set(Calendar.SECOND, 0);
+        } else {
+            return;
         }
+
+        Utils.scheduleAlarmForWidget(context, widgetID, alarmCalendar);
     }
 
     @Override

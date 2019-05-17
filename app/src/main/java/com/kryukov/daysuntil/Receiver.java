@@ -21,30 +21,12 @@ public class Receiver extends BroadcastReceiver {
         SharedPreferences sp = ctx.getSharedPreferences(ConfigActivity.WIDGET_PREF, Context.MODE_PRIVATE);
         int widgetID = intent.getExtras().getInt("widgetID");
 
-        Calendar calendar;
+        Calendar calendar = Utils.getCalendarFromPreferences(sp, widgetID);
 
-        long daysBetween =  Utils.getDaysUntilFromPreferences(sp, widgetID);
-        if (daysBetween == 0) {
-            calendar = Calendar.getInstance();
-            calendar.set(Calendar.HOUR_OF_DAY, ConfigActivity.HOUR_TO_TRIGGER);
-            calendar.set(Calendar.MINUTE, ConfigActivity.MINUTE_TO_TRIGGER);
-            calendar.set(Calendar.SECOND, 0);
-            calendar.set(Calendar.MILLISECOND, 0);
-
-            if (calendar.before(Calendar.getInstance())) {
-                Utils.createChannel(ctx);
-                Utils.showNotification(
-                        ctx,
-                        "It's now",
-                        widgetID
-                );
-                return; // Skip creating new alarm
-            }
-        } else {
-            calendar = Utils.getNextDay();
+        if (calendar != null && Utils.getDaysUntil(calendar) < 0) {
+            Utils.createChannel(ctx);
+            Utils.showNotification(ctx, "It's now", widgetID);
         }
-
-        Utils.scheduleAlarmForWidget(ctx, widgetID, calendar);
 
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(ctx);
         DaysUntilWidget.updateWidget(ctx, appWidgetManager, sp, widgetID);

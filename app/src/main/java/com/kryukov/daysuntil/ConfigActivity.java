@@ -16,8 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class ConfigActivity extends AppCompatActivity {
     final static String CHANNEL_ID = "DaysUntilChan";
-    final static int HOUR_TO_TRIGGER = 9;
-    final static int MINUTE_TO_TRIGGER = 0;
+    final static int HOUR_TO_TRIGGER = 0;
+    final static int MINUTE_TO_TRIGGER = 10;
 
     int widgetID = AppWidgetManager.INVALID_APPWIDGET_ID;
     Intent resultValue;
@@ -80,8 +80,6 @@ public class ConfigActivity extends AppCompatActivity {
                             "It's already happened",
                             widgetID
                     );
-                } else {
-                    Utils.scheduleAlarmForWidget(getApplicationContext(), widgetID, Calendar.getInstance());
                 }
 
                 commitAndFinish(sp);

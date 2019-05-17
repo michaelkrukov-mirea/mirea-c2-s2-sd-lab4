@@ -8,28 +8,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.util.Log;
 
 import java.util.Calendar;
 
 import androidx.core.app.NotificationCompat;
 
 class Utils {
-    /**
-     *  Get next day's 00:00:00.500 as calendar
-     */
-    static Calendar getNextDay() {
-        Calendar calendar = Calendar.getInstance();
-
-        calendar.add(Calendar.DATE, 1);
-
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 500);
-
-        return calendar;
-    }
-
     static void createChannel(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = context.getString(R.string.channel_name);
@@ -55,22 +40,15 @@ class Utils {
         manager.notify(widgetID, builder.build());
     }
 
-    static boolean isAlarmForWidgetExists(Context context, int widgetID) {
-        Intent intent = new Intent(context, Receiver.class);
-        intent.setAction("updateDaysCounter" + widgetID);
-        intent.putExtra("widgetID", widgetID);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, widgetID, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_NO_CREATE);
-
-        return pendingIntent != null;
-    }
-
     static void scheduleAlarmForWidget(Context context, int widgetID, Calendar calendar) {
         Intent intent = new Intent(context, Receiver.class);
         intent.setAction("updateDaysCounter" + widgetID);
         intent.putExtra("widgetID", widgetID);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, widgetID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, widgetID, intent, 0);
 
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        Log.i("ASDKJAHDKJHAKJDSBASD", "scheduleAlarmForWidget: " + calendar.getTime().toString() + " " + widgetID);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
@@ -83,7 +61,7 @@ class Utils {
         Intent intent = new Intent(context, Receiver.class);
         intent.setAction("updateDaysCounter" + widgetID);
         intent.putExtra("widgetID", widgetID);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, widgetID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, widgetID, intent, 0);
 
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.cancel(pendingIntent);
@@ -106,10 +84,21 @@ class Utils {
         return calendar;
     }
 
-    private static long getDaysUntil(Calendar calendar) {
+    static long getDaysUntil(Calendar calendar) {
         Calendar b = Calendar.getInstance();
 
         long daysBetween = 0;
+
+        if (calendar.before(b)) {
+            Calendar target = (Calendar) calendar.clone();
+            target.set(Calendar.HOUR_OF_DAY, ConfigActivity.HOUR_TO_TRIGGER);
+            target.set(Calendar.MINUTE, ConfigActivity.MINUTE_TO_TRIGGER);
+            target.set(Calendar.SECOND, 0);
+
+            if (target.before(b)) {
+                return -1;
+            }
+        }
 
         while (b.before(calendar)) {
             b.add(Calendar.DATE, 1);
@@ -117,15 +106,5 @@ class Utils {
         }
 
         return daysBetween;
-    }
-
-    static long getDaysUntilFromPreferences(SharedPreferences sp, int widgetID) {
-        Calendar calendar = Utils.getCalendarFromPreferences(sp, widgetID);
-
-        if (calendar == null) {
-            return -1;
-        }
-
-        return getDaysUntil(calendar);
     }
 }
