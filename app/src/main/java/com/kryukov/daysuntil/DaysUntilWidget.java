@@ -43,8 +43,6 @@ public class DaysUntilWidget extends AppWidgetProvider {
 
         appWidgetManager.updateAppWidget(widgetID, widgetView);
 
-        Utils.clearAlarmForWidget(context, widgetID);
-
         Calendar alarmCalendar = Calendar.getInstance();
 
         if (daysBetween > 0) {
