@@ -44,7 +44,7 @@ class Utils {
         Intent intent = new Intent(context, Receiver.class);
         intent.setAction("updateDaysCounter" + widgetID);
         intent.putExtra("widgetID", widgetID);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, widgetID, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
@@ -61,7 +61,7 @@ class Utils {
         Intent intent = new Intent(context, Receiver.class);
         intent.setAction("updateDaysCounter" + widgetID);
         intent.putExtra("widgetID", widgetID);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, widgetID, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.cancel(pendingIntent);
